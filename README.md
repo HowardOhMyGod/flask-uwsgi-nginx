@@ -3,7 +3,7 @@
 ## Usage
 Run `bash build.sh` in your *flask working directory* to build a docker image. After building this image, use `docker run -d -p [host_port]:[container_port] howardohmygod/flask-uwsgi:python3.5` it will automatically run your application on the host port on your machine (locahost:host_port).
 
-The shell will automatically generate uwsgi ini file, nginx config file and start.sh.
+The shell will automatically generate uwsgi ini file, nginx config file and start.sh base on user input.
 
 ## User Input
 ```
@@ -15,7 +15,7 @@ FLASK_APP: The flask instance in ENTRY_FILE
 PORT: Set your container expose port
 ```
 
-## .ini file
+## uwsgi .ini file
 ```
 [uwsgi]
 
@@ -61,16 +61,20 @@ WORKDIR ${WORKDIR_DOCK}
 
 COPY ${WORKDIR} ${WORKDIR_DOCK}
 
+# install apt-get package
 RUN apt-get -y update && \
     apt-get -y install python3-pip python3-dev nginx curl vim git htop
 
+# pip install and set nginx config file to /etc/nginx/site-available
 RUN pip3 install --upgrade pip && \
     pip3 install --trusted-host pypi.python.org -r requirement.txt && \
     cp ${PROJ_NAME} /etc/nginx/sites-available && \
     ln -s /etc/nginx/sites-available/${PROJ_NAME} /etc/nginx/sites-enabled
 
+# expose port to host machine
 EXPOSE ${PORT}
 
+# restart nginx and run uwsgi --ini file.ini
 CMD [\"bash\", \"start.sh\"]
 ```
 
